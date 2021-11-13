@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+	"http://struts.apache.org/dtds/struts-2.5.dtd">	
+	
+<struts>
+	<constant name="struts.devMode" value="false" />
+	<constant name="struts.enable.DynamicMethodInvocation" value="true" />	
+	<package name="SSH_Forum" namespace="/" extends="struts-default">
+		<!-- 配置全局结果集 -->
+		<global-results>
+			<result name="toDetail" type="redirectAction">
+				<param name="actionName">PasteAction_getDetail</param>
+				<!-- struts 不认识 pasteid ，则会封装到重定向 Action 中 -->
+				<param name="pasteid">${pasteid}</param>
+			</result>
+		</global-results>
+		<!-- 允许全部方法 -->
+		<global-allowed-methods>regex:.*</global-allowed-methods>
+		<action name="UserAction_*" class="com.xan.web.UserAction" method="{1}">
+			<result name="login">/login.jsp</result>
+			<result name="error">/login.jsp</result>
+			<result name="toIndex" type="redirect">/default.jsp</result>
+			<result name="toRegisterSuccess">/registerSuccess.jsp</result>
+		</action>
+		
+		<action name="PasteAction_*" class="com.xan.web.PasteAction" method="{1}">
+			<result name="toIndex" type="redirect">/default.jsp</result>
+			<result name="toLogin">/login.jsp</result>
+			<result name="detail">/detail.jsp</result>
+			
+		</action>
+		
+		<action name="GetDataAction_*" class="com.xan.web.GetDataAction" method="{1}">
+			<result name="index">/index.jsp</result>
+		</action>
+		
+		<action name="AnswerAction_*" class="com.xan.web.AnswerAction" method="{1}">
+			<result name="error">/login.jsp</result>
+			
+		</action>
+		
+		<action name="PraiseAction_*" class="com.xan.web.PraiseAction" method="{1}">
+			<result name="toLogin">/login.jsp</result>
+			
+		</action>
+		
+	</package>	
+</struts>

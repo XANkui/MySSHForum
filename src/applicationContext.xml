@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+	
+	<!-- 开启那个包下的注解 开启包的时候，会开启包下所有子包 -->
+	<context:component-scan base-package="com.xan"></context:component-scan>
+	
+	<!-- 配置 Hibernate 到 spring 中 -->
+	<bean name="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="jdbcUrl" value="jdbc:mysql:///ssh_forum"></property>
+		<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+		<property name="user" value="root"></property>
+		<property name="password" value="root123"></property>
+	</bean>
+	
+	<bean name="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL57InnoDBDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+<!-- 				<prop key="hibernate.current_session_context_class">thread</prop> -->
+			</props>
+		</property>
+		<!-- 配置orm元数据,会自动扫描该包下的所有配置文件 -->
+		<property name="mappingDirectoryLocations" value="classpath:com/xan/domain"></property>
+	</bean>
+	
+	<!-- 事务的核心管理器 依赖与连接池 -->
+	<bean name="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<!-- 配置事务通知 -->
+	<tx:advice id="advice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- 织入 -->
+	<aop:config>
+		<!-- 配置切入点 -->
+		<aop:pointcut expression="execution(* com.xan.service.*.*(..))" id="pointcut"/>
+		<aop:advisor advice-ref="advice" pointcut-ref="pointcut"/>
+	</aop:config>
+	
+ 		<!-- 配置 Action --> 
+	<bean name="userAction" class="com.xan.web.UserAction" scope="prototype">
+		<property name="userService" ref="userService"></property>
+	</bean>
+	<bean name="pasteAction" class="com.xan.web.PasteAction" scope="prototype">
+		<property name="pasteService" ref="pasteService"></property>
+		<property name="answerService" ref="answerService"></property>
+		<property name="praiseService" ref="praiseService"></property>
+	</bean>
+	<bean name="getDataAction" class="com.xan.web.GetDataAction" scope="prototype">
+		<property name="pasteService" ref="pasteService"></property>
+		<property name="userService" ref="userService"></property>
+	</bean>
+	<bean name="answerAction" class="com.xan.web.AnswerAction" scope="prototype">
+		<property name="pasteService" ref="pasteService"></property>
+		<property name="answerService" ref="answerService"></property>
+	</bean>
+	<bean name="praiseAction" class="com.xan.web.PraiseAction" scope="prototype">
+		<property name="answerService" ref="answerService"></property>
+		<property name="praiseService" ref="praiseService"></property>
+	</bean>
+	
+		<!-- 配置 Service--> 
+	<bean name="userService" class="com.xan.service.UserService" >
+		<property name="userDao" ref="userDao"></property>
+	</bean>
+	<bean name="pasteService" class="com.xan.service.PasteService">
+		<property name="pasteDao" ref="pasteDao"></property>
+		<property name="answerDao" ref="answerDao"></property>
+	</bean>
+	<bean name="answerService" class="com.xan.service.AnswerService">
+		<property name="answerDao" ref="answerDao"></property>
+		<property name="pasteDao" ref="pasteDao"></property>
+	</bean>
+	<bean name="praiseService" class="com.xan.service.PraiseService">
+		<property name="praiseDao" ref="praiseDao"></property>
+	</bean>
+	
+ 		<!-- 配置 Dao --> 
+	<bean name="userDao" class="com.xan.dao.UserDao" >
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean name="pasteDao" class="com.xan.dao.PasteDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean name="answerDao" class="com.xan.dao.AnswerDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean name="praiseDao" class="com.xan.dao.PraiseDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+</beans>
